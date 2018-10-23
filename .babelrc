@@ -1,0 +1,18 @@
+{
+    "presets": [
+        ["blueflag", {"browser": true, "library": true}]
+    ],
+    "ignore": [
+        "./lib"
+    ],
+    "plugins": [
+        "@babel/plugin-proposal-export-default-from"
+    ],
+    "env": {
+        "production": {
+            "plugins": [
+                ["babel-plugin-extract-flow-types", {"outDir": "lib"}]
+            ]
+        }
+    }
+}
