@@ -85,7 +85,9 @@ export default function RecordFactory(notSetValues: *) {
 
         clear = (): Record => this.unit({})
 
-        clone = (): Record => this.unit(this._data);
+        clone = (): Record => this.unit(this._data)
+
+        count = () => [...this.entries()].length
 
         toObject = (): * => this._data;
     }

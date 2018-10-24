@@ -8,6 +8,7 @@ import set from 'unmutable/lib/set';
 import setIn from 'unmutable/lib/setIn';
 import del from 'unmutable/lib/delete';
 import clear from 'unmutable/lib/clear';
+import count from 'unmutable/lib/count';
 import clone from 'unmutable/lib/clone';
 import toObject from 'unmutable/lib/toObject';
 import pipeWith from 'unmutable/lib/util/pipeWith';
@@ -98,6 +99,11 @@ it('supports the clone function', () => {
         clone()
     );
     expect(foo).not.toBe(data);
+});
+
+it('supports the count function', () => {
+    const foo = new FooRecord();
+    expect(count()(foo)).toBe(2);
 });
 
 
