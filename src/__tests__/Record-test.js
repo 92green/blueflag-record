@@ -27,9 +27,8 @@ describe('constructing', () => {
     });
 
     it('it will not throw for foriegn keys in fromUnknown', () => {
-        const foo = new FooRecord();
         expect(() => FooRecord.fromUnknown({not: 'cool'})).not.toThrow();
-
+        expect(FooRecord.fromUnknown({baz: '!!!'}).baz).toBe('!!!');
     });
 
     it('will store notSetValues and data internally', () => {
@@ -45,76 +44,97 @@ describe('constructing', () => {
 
 });
 
-it('supports the has function', () => {
-    const foo = new FooRecord({foo: 2});
-    expect(has('foo')(foo)).toBeTruthy();
+describe('getters', () => {
+
+    it('supports the has function', () => {
+        const foo = new FooRecord({foo: 2});
+        expect(has('foo')(foo)).toBeTruthy();
+    });
+
+    it('supports the get function', () => {
+        const foo = new FooRecord();
+        expect(get('foo')(foo)).toBe('bar');
+        expect(get('baz')(foo)).toBe('qux');
+        expect(get('baz', 'custom')(foo)).toBe('custom');
+    });
+
+    it('supports the getIn function', () => {
+        const foo = new FooRecord();
+        expect(getIn(['foo'])(foo)).toBe('bar');
+        expect(getIn(['bar'])(foo)).toBe(undefined);
+        expect(getIn(['bar'], 'baz')(foo)).toBe('baz');
+    });
+
+    it('supports the entries function', () => {
+        const foo = new FooRecord();
+        const data = pipeWith(foo, entries(), data => [...data]);
+        expect(data).toEqual([['foo', 'bar'], ['baz', 'qux']]);
+    });
+
+    it('supports the count function', () => {
+        const foo = new FooRecord();
+        expect(count()(foo)).toBe(2);
+    });
+
+    it('supports the toObject function', () => {
+        const foo = new FooRecord({foo: 'radical'});
+        const data = pipeWith(
+            foo,
+            toObject()
+        );
+        expect(data).toEqual({foo: 'radical', baz: 'qux'});
+    });
+
 });
 
-it('supports the get function', () => {
-    const foo = new FooRecord();
-    expect(get('foo')(foo)).toBe('bar');
-    expect(get('baz')(foo)).toBe('qux');
-    expect(get('baz', 'custom')(foo)).toBe('custom');
-});
+describe('setters', () => {
 
-it('supports the getIn function', () => {
-    const foo = new FooRecord();
-    expect(getIn(['foo'])(foo)).toBe('bar');
-    expect(getIn(['bar'])(foo)).toBe(undefined);
-    expect(getIn(['bar'], 'baz')(foo)).toBe('baz');
-});
+    it('supports the set function', () => {
+        const foo = new FooRecord();
+        const untouched = JSON.stringify(foo);
+        expect(set('foo', 'qux')(foo)._data.foo).toBe('qux');
+        expect(JSON.stringify(foo)).toBe(untouched);
+    });
 
-it('supports the set function', () => {
-    const foo = new FooRecord();
-    expect(set('foo', 'qux')(foo)._data.foo).toBe('qux');
-});
+    it('supports the setIn function', () => {
+        const foo = new FooRecord();
+        const untouched = JSON.stringify(foo);
+        expect(setIn(['foo', 'bar'], 'qux')(foo)._data.foo.bar).toBe('qux');
+        expect(JSON.stringify(foo)).toBe(untouched);
+    });
 
-it('supports the setIn function', () => {
-    const foo = new FooRecord();
-    expect(setIn(['foo', 'bar'], 'qux')(foo)._data.foo.bar).toBe('qux');
-});
+    it('supports the delete function', () => {
+        const foo = new FooRecord();
+        const untouched = JSON.stringify(foo);
+        expect(del('foo')(foo)._data.foo).toBe(undefined);
+        expect(JSON.stringify(foo)).toBe(untouched);
+    });
 
-it('supports the delete function', () => {
-    const foo = new FooRecord();
-    expect(del('foo')(foo)._data.foo).toBe(undefined);
-});
+    it('supports the clear function', () => {
+        const foo = new FooRecord({foo: 'radical'});
+        const untouched = JSON.stringify(foo);
+        const data = pipeWith(foo, clear(), get('foo'));
+        expect(data).not.toBe('radical');
+        expect(data).toBe('bar');
+        expect(JSON.stringify(foo)).toBe(untouched);
+    });
 
-it('supports the clear function', () => {
-    const foo = new FooRecord({foo: 'radical'});
-    const data = pipeWith(foo, clear(), get('foo'));
-    expect(data).not.toBe('radical');
-    expect(data).toBe('bar');
-});
 
-it('supports the entries function', () => {
-    const foo = new FooRecord();
-    const data = pipeWith(foo, entries(), data => [...data]);
-    expect(data).toEqual([['foo', 'bar'], ['baz', 'qux']]);
-});
+    it('supports the clone function', () => {
+        const foo = new FooRecord({foo: 'radical'});
+        const untouched = JSON.stringify(foo);
+        const data = pipeWith(
+            foo,
+            clone()
+        );
+        expect(foo).not.toBe(data);
+        expect(JSON.stringify(foo)).toBe(untouched);
+    });
 
-it('supports the clone function', () => {
-    const foo = new FooRecord({foo: 'radical'});
-    const data = pipeWith(
-        foo,
-        clone()
-    );
-    expect(foo).not.toBe(data);
-});
-
-it('supports the count function', () => {
-    const foo = new FooRecord();
-    expect(count()(foo)).toBe(2);
 });
 
 
-it('supports the toObject function', () => {
-    const foo = new FooRecord({foo: 'radical'});
-    const data = pipeWith(
-        foo,
-        toObject()
-    );
-    expect(data).toEqual({foo: 'radical', baz: 'qux'});
-});
+
 
 it('supports property accessors', () => {
     const foo = new FooRecord();

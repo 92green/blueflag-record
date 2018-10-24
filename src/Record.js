@@ -47,10 +47,10 @@ export default function RecordFactory(notSetValues: *) {
         static fromUnknown(unknown: *): * {
             return pipeWith(
                 Object.keys(notSetValues),
-                reduce((rr, ii, key) => {
+                reduce((rr, key) => {
                     const value = get(key)(unknown);
                     if(value) {
-                        return set(key)(rr);
+                        return set(key, value)(rr);
                     }
                     return rr;
                 }, {}),
