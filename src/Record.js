@@ -62,6 +62,10 @@ export default function RecordFactory(notSetValues: *) {
             return new this.constructor(data);
         }
 
+        toObject() {
+            return {...this._notSetValues, ...this._data};
+        }
+
 
 
         has = (key: string) => has(key)(this._data)
@@ -76,7 +80,7 @@ export default function RecordFactory(notSetValues: *) {
 
         delete = (key: string): Record => this.unit(del(key)(this._data))
 
-        entries = () => entries()({...this._notSetValues, ...this._data})
+        entries = () => entries()(this.toObject())
 
         merge = (next: *) => this.unit({
             ...this._data,
@@ -89,6 +93,5 @@ export default function RecordFactory(notSetValues: *) {
 
         count = () => [...this.entries()].length
 
-        toObject = (): * => this._data;
     }
 }

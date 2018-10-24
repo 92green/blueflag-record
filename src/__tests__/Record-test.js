@@ -1,17 +1,17 @@
 //@flow
+import clear from 'unmutable/lib/clear';
+import clone from 'unmutable/lib/clone';
+import count from 'unmutable/lib/count';
+import del from 'unmutable/lib/delete';
 import entries from 'unmutable/lib/entries';
-import merge from 'unmutable/lib/merge';
-import has from 'unmutable/lib/has';
 import get from 'unmutable/lib/get';
 import getIn from 'unmutable/lib/getIn';
+import has from 'unmutable/lib/has';
+import merge from 'unmutable/lib/merge';
+import pipeWith from 'unmutable/lib/util/pipeWith';
 import set from 'unmutable/lib/set';
 import setIn from 'unmutable/lib/setIn';
-import del from 'unmutable/lib/delete';
-import clear from 'unmutable/lib/clear';
-import count from 'unmutable/lib/count';
-import clone from 'unmutable/lib/clone';
 import toObject from 'unmutable/lib/toObject';
-import pipeWith from 'unmutable/lib/util/pipeWith';
 
 import Record from '../Record';
 
@@ -113,7 +113,7 @@ it('supports the toObject function', () => {
         foo,
         toObject()
     );
-    expect(data).toBe(foo._data);
+    expect(data).toEqual({foo: 'radical', baz: 'qux'});
 });
 
 it('supports property accessors', () => {
