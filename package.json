@@ -1,16 +1,16 @@
 {
   "main": "lib/index.js",
-  "name": "@blueflag/proto-blueflag-webpack",
+  "name": "blueflag-record",
   "version": "0.1.1",
-  "description": "An oppinionated webpack config",
+  "description": "An Unmutable compatible record",
   "license": "MIT",
   "author": "Allan Hortle",
   "repository": {
     "type": "git",
-    "url": "git@github.com:blueflag/proto-blueflag-webpack.git"
+    "url": "git@github.com:blueflag/blueflag-record.git"
   },
   "bugs": {
-    "url": "https://github.com/blueflag/proto-blueflag-webpack/issues"
+    "url": "https://github.com/blueflag/blueflag-record/issues"
   },
   "files": [
     "lib"
@@ -36,7 +36,9 @@
     "babel-preset-blueflag": "^1.0.0",
     "flow-bin": "^0.83.0",
     "jest": "^23.6.0",
-    "regenerator-runtime": "^0.12.1",
+    "regenerator-runtime": "^0.12.1"
+  },
+  "dependencies": {
     "unmutable": "^0.37.0"
   }
 }
