@@ -1,0 +1,24 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/blueflag-record
+    docker:
+      - image: blueflag/circle-node:0.0.6
+
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "yarn.lock" }}
+            - v1-dependencies-
+      - run: yarn install
+      - save_cache:
+          paths:
+            - node_modules
+            - example/node_modules
+          key: v1-dependencies-{{ checksum "yarn.lock" }}
+
+      # run tests!
+      - run: yarn build
+      - run: test -z "$(git status --porcelain)"
+      - run: yarn test
