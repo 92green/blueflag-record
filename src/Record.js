@@ -54,7 +54,7 @@ export default function RecordFactory(notSetValues: *) {
                     }
                     return rr;
                 }, {}),
-                data => new Record(data)
+                data => new this(data)
             );
         }
 
