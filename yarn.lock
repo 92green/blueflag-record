@@ -3813,9 +3813,9 @@ universalify@^0.1.0:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/universalify/-/universalify-0.1.2.tgz#b646f69be3942dabcecc9d6639c80dc105efaa66"
 
-unmutable@^0.37.0:
-  version "0.37.0"
-  resolved "https://registry.yarnpkg.com/unmutable/-/unmutable-0.37.0.tgz#728dc1d503206475d4ab49d72e4b16adb69a3c8f"
+unmutable@^0.39.0:
+  version "0.39.0"
+  resolved "https://registry.yarnpkg.com/unmutable/-/unmutable-0.39.0.tgz#8ccdfb237ba4c572cba793cbbbd7d503227ad576"
   dependencies:
     fast-deep-equal "^1.0.0"
     is-plain-object "^2.0.4"
