@@ -4,6 +4,6 @@ workflow "Tests" {
 }
 
 action "yarn" {
-  uses = "yarn"
+  uses = "actions/npm@33871a7"
   runs = "test-all"
 }
