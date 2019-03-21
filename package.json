@@ -32,7 +32,6 @@
     "@babel/runtime": "^7.1.2",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^23.6.0",
-    "babel-plugin-extract-flow-types": "^1.0.0",
     "babel-preset-blueflag": "^1.0.0",
     "flow-bin": "^0.83.0",
     "jest": "^23.6.0",
