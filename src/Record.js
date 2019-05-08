@@ -63,7 +63,7 @@ export default function RecordFactory(notSetValues) {
 
 
 
-        has = (key) => has(key)(this._data)
+        has = (key) => has(key)(this._notSetValues)
 
         get = (key, notSetValue) => get(key, notSetValue || get(key)(this._notSetValues))(this._data)
 
