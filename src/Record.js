@@ -95,7 +95,7 @@ export default function RecordFactory(config) {
 
         merge = (next) => this.unit({
             ...this._data,
-            ...toObject()(next)
+            ...(next._data || next)
         })
 
         clear = () => this.unit({})
