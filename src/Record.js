@@ -11,16 +11,24 @@ import toObject from 'unmutable/lib/toObject';
 import pipeWith from 'unmutable/lib/util/pipeWith';
 
 const indentity = x => x;
+const value = (vv) => ({enumerable: false, value: vv});
 
 export default function RecordFactory(config) {
     const keyConfig = map((vv) => (typeof vv === 'object') ? vv : {notSetValues: vv})(config);
     const notSetValues = map(vv => vv && vv.notSetValue || vv)(config);
+    const setter = (key, value) => (keyConfig[key].set || indentity)(value);
+    const getter = (key, value) => (keyConfig[key].get || indentity)(value);
 
     return class Record {
         constructor(data = {}) {
-            this.__UNMUTABLE_COMPATIBLE__ = true;
-            this._data = data;
-            this._notSetValues = notSetValues;
+            Object.defineProperties(this, {
+                __UNMUTABLE_COMPATIBLE__: value(true),
+                _data: value(data),
+                _notSetValues: value(notSetValues),
+                unit: value((data) => new this.constructor(data)),
+                toObject: value(() => ({...this._notSetValues, ...this._data})),
+                toJSON: value(() => this.toObject())
+            });
 
             Object
                 .keys(data)
@@ -58,13 +66,6 @@ export default function RecordFactory(config) {
             );
         }
 
-        unit(data) {
-            return new this.constructor(data);
-        }
-
-        toObject() {
-            return {...this._notSetValues, ...this._data};
-        }
 
 
 
