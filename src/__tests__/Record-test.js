@@ -22,7 +22,7 @@ const FooRecord = Record({
 
 const DateRecord = Record({
     start: {
-        notSetValue: new Date('2000-01-01'),
+        notSetValue: '2000-01-01',
         get: value => new Date(value),
         set: value => value.getFullYear()
     }
@@ -95,10 +95,19 @@ describe('getters', () => {
         expect(data).toEqual({foo: 'radical', baz: undefined});
     });
 
+    it('will not apply getters to toObject', () => {
+        expect(new DateRecord({}).toObject().start).toBe('2000-01-01');
+    })
 
-    it('applies config.get to the value', () => {
+
+    it('applies getter to the value', () => {
         const date = new DateRecord({start: '2001-01-01'});
         expect(date.start).toEqual(new Date('2001-01-01'));
+    });
+
+    it('applies getter to the notSetValue', () => {
+        const date = new DateRecord({});
+        expect(date.start).toEqual(new Date('2000-01-01'));
     });
 
 });

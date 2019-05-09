@@ -38,13 +38,7 @@ export default function RecordFactory(config) {
                 has: nonEnumerable((key) => has(key)(this._notSetValues)),
 
                 get: nonEnumerable((key, notFoundValue) => {
-                    const value = this._data[key];
-
-                    if(value !== undefined) {
-                        return (keyConfig[key].get || indentity)(value);
-                    }
-
-                    return notFoundValue || get(key)(this._notSetValues);
+                    return getter(key, this._data[key] || notFoundValue || this._notSetValues[key]);
                 }),
 
                 getIn: nonEnumerable((path, notFoundValue) => getIn(path, notFoundValue === undefined ? getIn(path)(this._notSetValues) : notFoundValue)(this._data)),
