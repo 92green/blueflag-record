@@ -17,7 +17,15 @@ import Record from '../Record';
 
 const FooRecord = Record({
     foo: 'bar',
-    baz: 'qux'
+    baz: undefined
+});
+
+const DateRecord = Record({
+    start: {
+        notSetValue: new Date('2000-01-01'),
+        get: value => new Date(value),
+        set: value => value.getFullYear()
+    }
 });
 
 describe('constructing', () => {
@@ -49,12 +57,14 @@ describe('getters', () => {
     it('supports the has function', () => {
         const foo = new FooRecord({foo: 2});
         expect(has('foo')(foo)).toBeTruthy();
+        expect(has('baz')(foo)).toBeTruthy();
+        expect(has('other')(foo)).toBeFalsy();
     });
+
 
     it('supports the get function', () => {
         const foo = new FooRecord();
         expect(get('foo')(foo)).toBe('bar');
-        expect(get('baz')(foo)).toBe('qux');
         expect(get('baz', 'custom')(foo)).toBe('custom');
     });
 
@@ -68,7 +78,7 @@ describe('getters', () => {
     it('supports the entries function', () => {
         const foo = new FooRecord();
         const data = pipeWith(foo, entries(), data => [...data]);
-        expect(data).toEqual([['foo', 'bar'], ['baz', 'qux']]);
+        expect(data).toEqual([['foo', 'bar'], ['baz', undefined]]);
     });
 
     it('supports the count function', () => {
@@ -82,7 +92,13 @@ describe('getters', () => {
             foo,
             toObject()
         );
-        expect(data).toEqual({foo: 'radical', baz: 'qux'});
+        expect(data).toEqual({foo: 'radical', baz: undefined});
+    });
+
+
+    it('applies config.get to the value', () => {
+        const date = new DateRecord({start: '2001-01-01'});
+        expect(date.start).toEqual(new Date('2001-01-01'));
     });
 
 });
@@ -131,6 +147,13 @@ describe('setters', () => {
         expect(JSON.stringify(foo)).toBe(untouched);
     });
 
+    it('applies config.set to the new value', () => {
+        const date = new DateRecord({start: '2001-01-01'})
+            .set('start', new Date('2222-01-01'));
+
+        expect(date._data.start).toBe(2222);
+    });
+
 });
 
 
@@ -138,17 +161,34 @@ describe('setters', () => {
 
 it('supports property accessors', () => {
     const foo = new FooRecord();
-    expect(foo.baz).toBe('qux');
+    expect(foo.foo).toBe('bar');
     expect(() => foo.baz = 'wrong!').toThrow('Record does not support property assignment.');
 });
 
 describe('merging', () => {
-    it('it will merge data before default values', () => {
-        const previous = new FooRecord({foo: 1});
+    it('will merge only data not default values', () => {
+        const previous = new FooRecord({foo: 1, baz: 'qux'});
         const next = new FooRecord({foo: 2});
 
         const merged = merge(next)(previous);
         expect(merged.foo).toBe(2);
         expect(merged.baz).toBe('qux');
+    });
+
+    it('will parse new values through setters', () => {
+        const previous = new DateRecord({});
+        const next = new DateRecord({start: new Date('2001-01-01')});
+
+        const merged = previous.merge({start: new Date('2001-01-01')});
+        expect(merged._data.start).toBe(2001);
+    });
+
+    it('can merge records or objects', () => {
+        const newData = {start: new Date('1984-01-01')};
+        const previous = new DateRecord({});
+
+        expect(previous.merge(newData)._data.start).toBe(1984);
+        expect(previous.merge(new DateRecord(newData))._data.start).toBe(1984);
+
     });
 });

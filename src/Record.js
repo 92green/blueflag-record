@@ -4,17 +4,78 @@ import entries from 'unmutable/lib/entries';
 import get from 'unmutable/lib/get';
 import getIn from 'unmutable/lib/getIn';
 import has from 'unmutable/lib/has';
+import map from 'unmutable/lib/map';
 import set from 'unmutable/lib/set';
 import setIn from 'unmutable/lib/setIn';
 import toObject from 'unmutable/lib/toObject';
 import pipeWith from 'unmutable/lib/util/pipeWith';
 
-export default function RecordFactory(notSetValues) {
+const indentity = x => x;
+const nonEnumerable = (vv) => ({enumerable: false, value: vv});
+
+export default function RecordFactory(config) {
+    const keyConfig = map((vv) => (typeof vv === 'object') ? vv : {notSetValues: vv})(config);
+    const notSetValues = map(vv => vv && vv.notSetValue || vv)(config);
+    const setter = (key, value) => ((keyConfig[key] || {}).set || indentity)(value);
+    const getter = (key, value) => ((keyConfig[key] || {}).get || indentity)(value);
+
     return class Record {
         constructor(data = {}) {
-            this.__UNMUTABLE_COMPATIBLE__ = true;
-            this._data = data;
-            this._notSetValues = notSetValues;
+            Object.defineProperties(this, {
+
+                // Private values
+                __UNMUTABLE_COMPATIBLE__: nonEnumerable(true),
+                _data: nonEnumerable(data),
+                _notSetValues: nonEnumerable(notSetValues),
+
+                // Methods
+                unit: nonEnumerable((data) => new this.constructor(data)),
+
+                toObject: nonEnumerable(() => ({...this._notSetValues, ...this._data})),
+
+                toJSON: nonEnumerable(() => this.toObject()),
+
+                has: nonEnumerable((key) => has(key)(this._notSetValues)),
+
+                get: nonEnumerable((key, notFoundValue) => {
+                    const value = this._data[key];
+
+                    if(value !== undefined) {
+                        return (keyConfig[key].get || indentity)(value);
+                    }
+
+                    return notFoundValue || get(key)(this._notSetValues);
+                }),
+
+                getIn: nonEnumerable((path, notFoundValue) => getIn(path, notFoundValue === undefined ? getIn(path)(this._notSetValues) : notFoundValue)(this._data)),
+
+                set: nonEnumerable((key, childValue) => {
+                    const value = setter(key, childValue);
+                    return this.unit(set(key, value)(this._data));
+                }),
+
+                setIn: nonEnumerable((path, childValue) => this.unit(setIn(path, childValue)(this._data))),
+
+                delete: nonEnumerable((key) => this.unit(del(key)(this._data))),
+
+                entries: nonEnumerable(() => entries()(this.toObject())),
+
+                merge: nonEnumerable((next) => {
+                    // prepare a function to run the new values through their setter
+                    const updateValues = map((value, key) => setter(key, value));
+
+                    return this.unit({
+                        ...this._data,
+                        ...updateValues(next._data || next) // only merge the data
+                    });
+                }),
+
+                clear: nonEnumerable(() => this.unit({})),
+
+                clone: nonEnumerable(() => this.unit(this._data)),
+
+                count: nonEnumerable(() => [...this.entries()].length)
+            });
 
             Object
                 .keys(data)
@@ -24,9 +85,8 @@ export default function RecordFactory(notSetValues) {
                     }
                 })
 
-
             Object
-                .keys(notSetValues)
+                .keys(keyConfig)
                 .forEach((key) => {
                     Object.defineProperty(this, key, {
                         enumerable: true,
@@ -35,7 +95,7 @@ export default function RecordFactory(notSetValues) {
                         },
                         get: () => this.get(key)
                     });
-            });
+                });
 
         }
 
@@ -53,40 +113,9 @@ export default function RecordFactory(notSetValues) {
             );
         }
 
-        unit(data) {
-            return new this.constructor(data);
-        }
-
-        toObject() {
-            return {...this._notSetValues, ...this._data};
-        }
 
 
 
-        has = (key) => has(key)(this._data)
-
-        get = (key, notSetValue) => get(key, notSetValue || get(key)(this._notSetValues))(this._data)
-
-        getIn = (path, notSetValue) => getIn(path, notSetValue === undefined ? getIn(path)(this._notSetValues) : notSetValue)(this._data)
-
-        set = (key, childValue) => this.unit(set(key, childValue)(this._data))
-
-        setIn = (path, childValue) => this.unit(setIn(path, childValue)(this._data))
-
-        delete = (key) => this.unit(del(key)(this._data))
-
-        entries = () => entries()(this.toObject())
-
-        merge = (next) => this.unit({
-            ...this._data,
-            ...toObject()(next)
-        })
-
-        clear = () => this.unit({})
-
-        clone = () => this.unit(this._data)
-
-        count = () => [...this.entries()].length
 
     }
 }
