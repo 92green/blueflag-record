@@ -22,12 +22,59 @@ export default function RecordFactory(config) {
     return class Record {
         constructor(data = {}) {
             Object.defineProperties(this, {
+
+                // Private values
                 __UNMUTABLE_COMPATIBLE__: nonEnumerable(true),
                 _data: nonEnumerable(data),
                 _notSetValues: nonEnumerable(notSetValues),
+
+                // Methods
                 unit: nonEnumerable((data) => new this.constructor(data)),
+
                 toObject: nonEnumerable(() => ({...this._notSetValues, ...this._data})),
-                toJSON: nonEnumerable(() => this.toObject())
+
+                toJSON: nonEnumerable(() => this.toObject()),
+
+                has: nonEnumerable((key) => has(key)(this._notSetValues)),
+
+                get: nonEnumerable((key, notFoundValue) => {
+                    const value = this._data[key];
+
+                    if(value !== undefined) {
+                        return (keyConfig[key].get || indentity)(value);
+                    }
+
+                    return notFoundValue || get(key)(this._notSetValues);
+                }),
+
+                getIn: nonEnumerable((path, notFoundValue) => getIn(path, notFoundValue === undefined ? getIn(path)(this._notSetValues) : notFoundValue)(this._data)),
+
+                set: nonEnumerable((key, childValue) => {
+                    const value = setter(key, childValue);
+                    return this.unit(set(key, value)(this._data));
+                }),
+
+                setIn: nonEnumerable((path, childValue) => this.unit(setIn(path, childValue)(this._data))),
+
+                delete: nonEnumerable((key) => this.unit(del(key)(this._data))),
+
+                entries: nonEnumerable(() => entries()(this.toObject())),
+
+                merge: nonEnumerable((next) => {
+                    // prepare a function to run the new values through their setter
+                    const updateValues = map((value, key) => setter(key, value));
+
+                    return this.unit({
+                        ...this._data,
+                        ...updateValues(next._data || next) // only merge the data
+                    });
+                }),
+
+                clear: nonEnumerable(() => this.unit({})),
+
+                clone: nonEnumerable(() => this.unit(this._data)),
+
+                count: nonEnumerable(() => [...this.entries()].length)
             });
 
             Object
@@ -69,46 +116,6 @@ export default function RecordFactory(config) {
 
 
 
-        has = (key) => has(key)(this._notSetValues)
-
-        get = (key, notFoundValue) => {
-            const value = this._data[key];
-
-            if(value !== undefined) {
-                return (keyConfig[key].get || indentity)(value);
-            }
-
-            return notFoundValue || get(key)(this._notSetValues);
-        }
-
-        getIn = (path, notFoundValue) => getIn(path, notFoundValue === undefined ? getIn(path)(this._notSetValues) : notFoundValue)(this._data)
-
-        set = (key, childValue) => {
-            const value = setter(key, childValue);
-            return this.unit(set(key, value)(this._data));
-        }
-
-        setIn = (path, childValue) => this.unit(setIn(path, childValue)(this._data))
-
-        delete = (key) => this.unit(del(key)(this._data))
-
-        entries = () => entries()(this.toObject())
-
-        merge = (next) => {
-            // prepare a function to run the new values through their setter
-            const updateValues = map((value, key) => setter(key, value));
-
-            return this.unit({
-                ...this._data,
-                ...updateValues(next._data || next) // only merge the data
-            });
-        }
-
-        clear = () => this.unit({})
-
-        clone = () => this.unit(this._data)
-
-        count = () => [...this.entries()].length
 
     }
 }
