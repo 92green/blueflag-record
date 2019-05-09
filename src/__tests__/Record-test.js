@@ -166,12 +166,29 @@ it('supports property accessors', () => {
 });
 
 describe('merging', () => {
-    it('it will merge data before default values', () => {
+    it('will merge only data not default values', () => {
         const previous = new FooRecord({foo: 1, baz: 'qux'});
         const next = new FooRecord({foo: 2});
 
         const merged = merge(next)(previous);
         expect(merged.foo).toBe(2);
         expect(merged.baz).toBe('qux');
+    });
+
+    it('will parse new values through setters', () => {
+        const previous = new DateRecord({});
+        const next = new DateRecord({start: new Date('2001-01-01')});
+
+        const merged = previous.merge({start: new Date('2001-01-01')});
+        expect(merged._data.start).toBe(2001);
+    });
+
+    it('can merge records or objects', () => {
+        const newData = {start: new Date('1984-01-01')};
+        const previous = new DateRecord({});
+
+        expect(previous.merge(newData)._data.start).toBe(1984);
+        expect(previous.merge(new DateRecord(newData))._data.start).toBe(1984);
+
     });
 });

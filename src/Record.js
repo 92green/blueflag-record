@@ -11,23 +11,23 @@ import toObject from 'unmutable/lib/toObject';
 import pipeWith from 'unmutable/lib/util/pipeWith';
 
 const indentity = x => x;
-const value = (vv) => ({enumerable: false, value: vv});
+const nonEnumerable = (vv) => ({enumerable: false, value: vv});
 
 export default function RecordFactory(config) {
     const keyConfig = map((vv) => (typeof vv === 'object') ? vv : {notSetValues: vv})(config);
     const notSetValues = map(vv => vv && vv.notSetValue || vv)(config);
-    const setter = (key, value) => (keyConfig[key].set || indentity)(value);
-    const getter = (key, value) => (keyConfig[key].get || indentity)(value);
+    const setter = (key, value) => ((keyConfig[key] || {}).set || indentity)(value);
+    const getter = (key, value) => ((keyConfig[key] || {}).get || indentity)(value);
 
     return class Record {
         constructor(data = {}) {
             Object.defineProperties(this, {
-                __UNMUTABLE_COMPATIBLE__: value(true),
-                _data: value(data),
-                _notSetValues: value(notSetValues),
-                unit: value((data) => new this.constructor(data)),
-                toObject: value(() => ({...this._notSetValues, ...this._data})),
-                toJSON: value(() => this.toObject())
+                __UNMUTABLE_COMPATIBLE__: nonEnumerable(true),
+                _data: nonEnumerable(data),
+                _notSetValues: nonEnumerable(notSetValues),
+                unit: nonEnumerable((data) => new this.constructor(data)),
+                toObject: nonEnumerable(() => ({...this._notSetValues, ...this._data})),
+                toJSON: nonEnumerable(() => this.toObject())
             });
 
             Object
@@ -84,7 +84,7 @@ export default function RecordFactory(config) {
         getIn = (path, notFoundValue) => getIn(path, notFoundValue === undefined ? getIn(path)(this._notSetValues) : notFoundValue)(this._data)
 
         set = (key, childValue) => {
-            const value = getIn([key, 'set'], indentity)(keyConfig)(childValue);
+            const value = setter(key, childValue);
             return this.unit(set(key, value)(this._data));
         }
 
@@ -94,10 +94,15 @@ export default function RecordFactory(config) {
 
         entries = () => entries()(this.toObject())
 
-        merge = (next) => this.unit({
-            ...this._data,
-            ...(next._data || next)
-        })
+        merge = (next) => {
+            // prepare a function to run the new values through their setter
+            const updateValues = map((value, key) => setter(key, value));
+
+            return this.unit({
+                ...this._data,
+                ...updateValues(next._data || next) // only merge the data
+            });
+        }
 
         clear = () => this.unit({})
 
