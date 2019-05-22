@@ -10,14 +10,14 @@ import setIn from 'unmutable/lib/setIn';
 import toObject from 'unmutable/lib/toObject';
 import pipeWith from 'unmutable/lib/util/pipeWith';
 
-const indentity = x => x;
+const identity = x => x;
 const nonEnumerable = (vv) => ({enumerable: false, value: vv});
 
 export default function RecordFactory(config) {
     const keyConfig = map((vv) => (typeof vv === 'object') ? vv : {notSetValues: vv})(config);
     const notSetValues = map(vv => vv && vv.notSetValue || vv)(config);
-    const setter = (key, value) => ((keyConfig[key] || {}).set || indentity)(value);
-    const getter = (key, value) => ((keyConfig[key] || {}).get || indentity)(value);
+    const setter = (key, value) => ((keyConfig[key] || {}).set || identity)(value);
+    const getter = (key, value) => ((keyConfig[key] || {}).get || identity)(value);
 
     return class Record {
         constructor(data = {}) {
