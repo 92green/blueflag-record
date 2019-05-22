@@ -15,7 +15,12 @@ const nonEnumerable = (vv) => ({enumerable: false, value: vv});
 
 export default function RecordFactory(config) {
     const keyConfig = map((vv) => (typeof vv === 'object') ? vv : {notSetValues: vv})(config);
-    const notSetValues = map(vv => vv && vv.notSetValue || vv)(config);
+    const notSetValues = map(vv => {
+        if(typeof vv !== 'object') {
+            return vv;
+        }
+        return get('notSetValue')(vv);
+    })(config);
 
     return class Record {
         constructor(data = {}) {
