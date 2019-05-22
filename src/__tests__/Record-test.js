@@ -42,6 +42,18 @@ const DerivedFieldsRecord = Record({
     }
 });
 
+class ConstructedFieldsRecord extends Record({
+    foo: undefined,
+    bar: undefined
+}) {
+    constructor(data) {
+        super({
+            ...data,
+            bar: data.foo + data.foo
+        });
+    }
+};
+
 describe('constructing', () => {
     it('it will throw for foriegn keys', () => {
         const foo = new FooRecord({foo: 1});
@@ -231,4 +243,17 @@ describe('merging', () => {
         expect(previous.merge(new DateRecord(newData))._data.start).toBe(1984);
 
     });
+});
+
+describe('constructed fields', () => {
+    it('will set field values during construction', () => {
+        const record = new ConstructedFieldsRecord({foo: 'hello'});
+        expect(record.foo).toBe('hello');
+        expect(record.bar).toBe('hellohello');
+
+        const recordAfterSet = record.set('foo', 'hi');
+        expect(recordAfterSet.foo).toBe('hi');
+        expect(recordAfterSet.bar).toBe('hihi');
+    });
+
 });
