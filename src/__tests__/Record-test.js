@@ -28,6 +28,20 @@ const DateRecord = Record({
     }
 });
 
+const DerivedFieldsRecord = Record({
+    name: undefined,
+    nameLowercase: {
+        get: (value, data) => data.name.toLowerCase()
+    },
+    dateOfBirth: {
+        get: value => new Date(value),
+        set: value => value.getFullYear()
+    },
+    dateOfBirthRaw: {
+        get: (value, data) => data.dateOfBirth
+    }
+});
+
 describe('constructing', () => {
     it('it will throw for foriegn keys', () => {
         const foo = new FooRecord({foo: 1});
@@ -108,6 +122,17 @@ describe('getters', () => {
     it('applies getter to the notSetValue', () => {
         const date = new DateRecord({});
         expect(date.start).toEqual(new Date('2000-01-01'));
+    });
+
+    it('passes the data object as the getters second parameter', () => {
+        const date = new DerivedFieldsRecord({name: 'Mildred'});
+        expect(date.nameLowercase).toBe('mildred');
+    });
+
+    it('passes the data object without passing it through getters', () => {
+        const date = new DerivedFieldsRecord({name: 'Mildred', dateOfBirth: '2000-01-01'});
+        expect(date.dateOfBirth).toEqual(new Date('2000-01-01'));
+        expect(date.dateOfBirthRaw).toBe('2000-01-01');
     });
 
 });

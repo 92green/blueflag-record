@@ -16,11 +16,12 @@ const nonEnumerable = (vv) => ({enumerable: false, value: vv});
 export default function RecordFactory(config) {
     const keyConfig = map((vv) => (typeof vv === 'object') ? vv : {notSetValues: vv})(config);
     const notSetValues = map(vv => vv && vv.notSetValue || vv)(config);
-    const setter = (key, value) => ((keyConfig[key] || {}).set || identity)(value);
-    const getter = (key, value) => ((keyConfig[key] || {}).get || identity)(value);
 
     return class Record {
         constructor(data = {}) {
+            const setter = (key, value) => ((keyConfig[key] || {}).set || identity)(value);
+            const getter = (key, value) => ((keyConfig[key] || {}).get || identity)(value, this._data);
+
             Object.defineProperties(this, {
 
                 // Private values
