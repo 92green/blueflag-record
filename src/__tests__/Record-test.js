@@ -28,6 +28,32 @@ const DateRecord = Record({
     }
 });
 
+const DerivedFieldsRecord = Record({
+    name: undefined,
+    nameLowercase: {
+        get: (value, data) => data.name.toLowerCase()
+    },
+    dateOfBirth: {
+        get: value => new Date(value),
+        set: value => value.getFullYear()
+    },
+    dateOfBirthRaw: {
+        get: (value, data) => data.dateOfBirth
+    }
+});
+
+class ConstructedFieldsRecord extends Record({
+    foo: undefined,
+    bar: undefined
+}) {
+    constructor(data) {
+        super({
+            ...data,
+            bar: data.foo + data.foo
+        });
+    }
+};
+
 describe('constructing', () => {
     it('it will throw for foriegn keys', () => {
         const foo = new FooRecord({foo: 1});
@@ -87,12 +113,18 @@ describe('getters', () => {
     });
 
     it('supports the toObject function', () => {
-        const foo = new FooRecord({foo: 'radical'});
-        const data = pipeWith(
-            foo,
+        const foo = pipeWith(
+            new FooRecord({foo: 'radical'}),
             toObject()
         );
-        expect(data).toEqual({foo: 'radical', baz: undefined});
+        expect(foo).toEqual({foo: 'radical', baz: undefined});
+
+        const derivedFields = pipeWith(
+            new DerivedFieldsRecord({name: 'Mildred', dateOfBirth: '2000-01-01'}),
+            toObject()
+        )
+        expect(derivedFields).toEqual({name: 'Mildred', dateOfBirth: '2000-01-01'});
+
     });
 
     it('will not apply getters to toObject', () => {
@@ -108,6 +140,17 @@ describe('getters', () => {
     it('applies getter to the notSetValue', () => {
         const date = new DateRecord({});
         expect(date.start).toEqual(new Date('2000-01-01'));
+    });
+
+    it('passes the data object as the getters second parameter', () => {
+        const date = new DerivedFieldsRecord({name: 'Mildred'});
+        expect(date.nameLowercase).toBe('mildred');
+    });
+
+    it('passes the data object without passing it through getters', () => {
+        const date = new DerivedFieldsRecord({name: 'Mildred', dateOfBirth: '2000-01-01'});
+        expect(date.dateOfBirth).toEqual(new Date('2000-01-01'));
+        expect(date.dateOfBirthRaw).toBe('2000-01-01');
     });
 
 });
@@ -200,4 +243,17 @@ describe('merging', () => {
         expect(previous.merge(new DateRecord(newData))._data.start).toBe(1984);
 
     });
+});
+
+describe('constructed fields', () => {
+    it('will set field values during construction', () => {
+        const record = new ConstructedFieldsRecord({foo: 'hello'});
+        expect(record.foo).toBe('hello');
+        expect(record.bar).toBe('hellohello');
+
+        const recordAfterSet = record.set('foo', 'hi');
+        expect(recordAfterSet.foo).toBe('hi');
+        expect(recordAfterSet.bar).toBe('hihi');
+    });
+
 });
