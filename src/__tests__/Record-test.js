@@ -260,3 +260,11 @@ describe('constructed fields', () => {
     });
 
 });
+
+describe('printing to console', () => {
+    it('it will return a string of record contents when inspect() is called', () => {
+        const foo = new FooRecord({foo: 1});
+        expect(foo.inspect()).toBe('Record {\n  "foo": 1\n}');
+    });
+
+});

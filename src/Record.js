@@ -117,5 +117,8 @@ export default function RecordFactory(config) {
                 data => new this(data)
             );
         }
+
+        // for printing records with console.log() in node
+        inspect = () => `Record ${JSON.stringify(this.toObject(), null, 2)}`;
     }
 }
