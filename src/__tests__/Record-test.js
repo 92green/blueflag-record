@@ -131,6 +131,9 @@ describe('getters', () => {
         expect(new DateRecord({}).toObject().start).toBe('2000-01-01');
     })
 
+    it('allows falsey values to be got', () => {
+        expect(new FooRecord({baz: false}).baz).toBe(false);
+    });
 
     it('applies getter to the value', () => {
         const date = new DateRecord({start: '2001-01-01'});
@@ -254,6 +257,14 @@ describe('constructed fields', () => {
         const recordAfterSet = record.set('foo', 'hi');
         expect(recordAfterSet.foo).toBe('hi');
         expect(recordAfterSet.bar).toBe('hihi');
+    });
+
+});
+
+describe('printing to console', () => {
+    it('it will return a string of record contents when inspect() is called', () => {
+        const foo = new FooRecord({foo: 1});
+        expect(foo.inspect()).toBe('Record {\n  "foo": 1\n}');
     });
 
 });
