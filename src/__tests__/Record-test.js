@@ -131,6 +131,9 @@ describe('getters', () => {
         expect(new DateRecord({}).toObject().start).toBe('2000-01-01');
     })
 
+    it('allows falsey values to be got', () => {
+        expect(new FooRecord({baz: false}).baz).toBe(false);
+    });
 
     it('applies getter to the value', () => {
         const date = new DateRecord({start: '2001-01-01'});

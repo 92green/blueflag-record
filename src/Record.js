@@ -44,7 +44,12 @@ export default function RecordFactory(config) {
                 has: nonEnumerable((key) => has(key)(this._notSetValues)),
 
                 get: nonEnumerable((key, notFoundValue) => {
-                    return getter(key, this._data[key] || notFoundValue || this._notSetValues[key]);
+                    notFoundValue = notFoundValue !== undefined
+                        ? notFoundValue
+                        : this._notSetValues[key];
+
+                    let value = get(key, notFoundValue)(this._data);
+                    return getter(key, value);
                 }),
 
                 getIn: nonEnumerable((path, notFoundValue) => getIn(path, notFoundValue === undefined ? getIn(path)(this._notSetValues) : notFoundValue)(this._data)),
@@ -112,10 +117,5 @@ export default function RecordFactory(config) {
                 data => new this(data)
             );
         }
-
-
-
-
-
     }
 }
