@@ -31,13 +31,16 @@ const DateRecord = Record({
 const DerivedFieldsRecord = Record({
     name: undefined,
     nameLowercase: {
+        notSetValue: undefined,
         get: (value, data) => data.name.toLowerCase()
     },
     dateOfBirth: {
+        notSetValue: undefined,
         get: value => new Date(value),
         set: value => value.getFullYear()
     },
     dateOfBirthRaw: {
+        notSetValue: undefined,
         get: (value, data) => data.dateOfBirth
     }
 });
@@ -76,6 +79,40 @@ describe('constructing', () => {
         expect(foo.unit()).not.toBe(foo);
     });
 
+});
+
+describe('notSetValues', () => {
+    it('will use the notSetValue key if given a getter/setter object', () => {
+        class GetterSetter extends Record({
+            foo: {
+                notSetValue: 'bar'
+            }
+        }) {};
+
+        expect((new GetterSetter({})).foo).toBe('bar');
+    });
+
+    it('will use the value if no getter/setter object is provided', () => {
+        class Shorthand extends Record({
+            un: undefined,
+            nul: null,
+            string: 'foo',
+            number: 1,
+            array: ['foo'],
+            object: {foo: 'bar'},
+            date: new Date('2001-01-01')
+        }) {};
+
+        const data = new Shorthand({});
+
+        expect(data.un).toBe(undefined);
+        expect(data.nul).toBe(null);
+        expect(data.string).toBe('foo');
+        expect(data.number).toBe(1);
+        expect(data.array).toEqual(['foo']);
+        expect(data.object).toEqual({foo: 'bar'});
+        expect(data.date).toEqual(new Date('2001-01-01'));
+    });
 });
 
 describe('getters', () => {
