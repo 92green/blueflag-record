@@ -1,14 +1,15 @@
-import del from 'unmutable/lib/delete';
-import reduce from 'unmutable/lib/reduce';
-import entries from 'unmutable/lib/entries';
-import get from 'unmutable/lib/get';
-import getIn from 'unmutable/lib/getIn';
-import has from 'unmutable/lib/has';
-import map from 'unmutable/lib/map';
-import set from 'unmutable/lib/set';
-import setIn from 'unmutable/lib/setIn';
-import toObject from 'unmutable/lib/toObject';
-import pipeWith from 'unmutable/lib/util/pipeWith';
+import del from 'unmutable/delete';
+import reduce from 'unmutable/reduce';
+import entries from 'unmutable/entries';
+import get from 'unmutable/get';
+import getIn from 'unmutable/getIn';
+import has from 'unmutable/has';
+import map from 'unmutable/map';
+import set from 'unmutable/set';
+import setIn from 'unmutable/setIn';
+import toObject from 'unmutable/toObject';
+import pipeWith from 'unmutable/pipeWith';
+import isKeyed from 'unmutable/isKeyed';
 
 const identity = x => x;
 const nonEnumerable = (vv) => ({enumerable: false, value: vv});
@@ -16,10 +17,10 @@ const nonEnumerable = (vv) => ({enumerable: false, value: vv});
 export default function RecordFactory(config) {
     const keyConfig = map((vv) => (typeof vv === 'object') ? vv : {notSetValues: vv})(config);
     const notSetValues = map(vv => {
-        if(typeof vv !== 'object') {
-            return vv;
+        if(isKeyed(vv) && has('notSetValue')(vv)) {
+            return get('notSetValue')(vv);
         }
-        return get('notSetValue')(vv);
+        return vv;
     })(config);
 
     return class Record {
