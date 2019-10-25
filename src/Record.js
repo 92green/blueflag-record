@@ -72,7 +72,7 @@ export default function RecordFactory(config) {
 
                     return this.unit({
                         ...this._data,
-                        ...updateValues(next._data || next) // only merge the data
+                        ...(next._data ? next._data : updateValues(next))
                     });
                 }),
 
