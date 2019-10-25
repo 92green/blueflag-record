@@ -280,7 +280,7 @@ describe('merging', () => {
         const previous = new DateRecord({});
 
         expect(previous.merge(newData)._data.start).toBe(1984);
-        expect(previous.merge(new DateRecord(newData))._data.start).toBe(1984);
+        expect(previous.merge(new DateRecord({start: 1984}))._data.start).toBe(1984);
 
     });
 });
